@@ -1,0 +1,18 @@
+# CIFAR-100 Image Classification Project - Environment Setup
+# Install required packages
+# Run this in your command line or notebook
+
+# Core libraries
+pip install numpy pandas matplotlib seaborn 
+
+# For PyTorch implementation
+pip install torch torchvision torchaudio
+
+# For TensorFlow implementation (optional)
+# pip install tensorflow
+
+# For model visualization
+pip install scikit-learn 
+
+# For advanced image processing
+pip install opencv-python albumentations
