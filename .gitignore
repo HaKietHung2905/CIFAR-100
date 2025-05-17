@@ -1,0 +1,44 @@
+# Dataset files
+data/
+data/*
+*.tar.gz
+*.pkl
+*.npz
+
+# Model checkpoints
+models/
+models/*
+*.pth
+*.pt
+*.h5
+*.ckpt
+
+# Results and visualizations
+results/
+results/*
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
