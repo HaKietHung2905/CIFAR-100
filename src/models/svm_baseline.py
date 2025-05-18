@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import time
 import os
+import sys
 import pickle
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
@@ -16,7 +17,11 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import seaborn as sns
 
-from data_preparation import load_cifar100
+# Add the project root directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import from the correct path
+from src.data.data_preparation import load_cifar100
 
 
 def extract_features(dataloader, feature_extractor, device, batch_size=128, num_workers=4):
@@ -72,7 +77,12 @@ def create_feature_extractor(model_name='resnet18'):
     """
     if model_name == 'resnet18':
         # Load pre-trained ResNet18
-        model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        try:
+            # Try new PyTorch API first
+            model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        except (AttributeError, ImportError):
+            # Fall back to older API
+            model = models.resnet18(pretrained=True)
         
         # Remove the final fully-connected layer
         feature_extractor = torch.nn.Sequential(*list(model.children())[:-1])
@@ -82,7 +92,12 @@ def create_feature_extractor(model_name='resnet18'):
         
     elif model_name == 'efficientnet_b0':
         # Load pre-trained EfficientNet B0
-        model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)
+        try:
+            # Try new PyTorch API first
+            model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)
+        except (AttributeError, ImportError):
+            # Fall back to older API
+            model = models.efficientnet_b0(pretrained=True)
         
         # Remove the classifier
         model.classifier = torch.nn.Identity()

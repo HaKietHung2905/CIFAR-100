@@ -4,15 +4,18 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torch.nn import functional as F
-from torchvision.models import ResNet18_Weights, ResNet50_Weights, VGG16_Weights
-from torchvision.models import DenseNet121_Weights, EfficientNet_B0_Weights, ConvNeXt_Tiny_Weights
 
 class ResNet18Model(nn.Module):
     """ResNet18 model for CIFAR-100 classification"""
     def __init__(self, num_classes=100, pretrained=True):
         super(ResNet18Model, self).__init__()
         if pretrained:
-            self.model = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+            try:
+                weights = models.ResNet18_Weights.DEFAULT
+                self.model = models.resnet18(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                self.model = models.resnet18(pretrained=True)
         else:
             self.model = models.resnet18(weights=None)
             
@@ -33,7 +36,12 @@ class ResNet50Model(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(ResNet50Model, self).__init__()
         if pretrained:
-            self.model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
+            try:
+                weights = models.ResNet50_Weights.DEFAULT
+                self.model = models.resnet50(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                self.model = models.resnet50(pretrained=True)
         else:
             self.model = models.resnet50(weights=None)
             
@@ -54,7 +62,12 @@ class VGG16Model(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(VGG16Model, self).__init__()
         if pretrained:
-            self.model = models.vgg16(weights=VGG16_Weights.DEFAULT)
+            try:
+                weights = models.VGG16_Weights.DEFAULT
+                self.model = models.vgg16(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                self.model = models.vgg16(pretrained=True)
         else:
             self.model = models.vgg16(weights=None)
             
@@ -70,7 +83,12 @@ class DenseNet121Model(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(DenseNet121Model, self).__init__()
         if pretrained:
-            self.model = models.densenet121(weights=DenseNet121_Weights.DEFAULT)
+            try:
+                weights = models.DenseNet121_Weights.DEFAULT
+                self.model = models.densenet121(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                self.model = models.densenet121(pretrained=True)
         else:
             self.model = models.densenet121(weights=None)
             
@@ -87,7 +105,12 @@ class EfficientNetB0Model(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(EfficientNetB0Model, self).__init__()
         if pretrained:
-            self.model = models.efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT)
+            try:
+                weights = models.EfficientNet_B0_Weights.DEFAULT
+                self.model = models.efficientnet_b0(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                self.model = models.efficientnet_b0(pretrained=True)
         else:
             self.model = models.efficientnet_b0(weights=None)
             
@@ -104,7 +127,16 @@ class ConvNextModel(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(ConvNextModel, self).__init__()
         if pretrained:
-            self.model = models.convnext_tiny(weights=ConvNeXt_Tiny_Weights.DEFAULT)
+            try:
+                weights = models.ConvNeXt_Tiny_Weights.DEFAULT
+                self.model = models.convnext_tiny(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                try:
+                    self.model = models.convnext_tiny(pretrained=True)
+                except:
+                    print("ConvNeXt not available in this PyTorch version, using without pre-training")
+                    self.model = models.convnext_tiny(pretrained=False)
         else:
             self.model = models.convnext_tiny(weights=None)
             
@@ -120,7 +152,16 @@ class VisionTransformerModel(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(VisionTransformerModel, self).__init__()
         if pretrained:
-            self.model = models.vit_b_16(weights=models.ViT_B_16_Weights.DEFAULT)
+            try:
+                weights = models.ViT_B_16_Weights.DEFAULT
+                self.model = models.vit_b_16(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                try:
+                    self.model = models.vit_b_16(pretrained=True)
+                except:
+                    print("ViT not available in this PyTorch version, using without pre-training")
+                    self.model = models.vit_b_16(pretrained=False)
         else:
             self.model = models.vit_b_16(weights=None)
             
@@ -139,7 +180,16 @@ class SwinTransformerModel(nn.Module):
     def __init__(self, num_classes=100, pretrained=True):
         super(SwinTransformerModel, self).__init__()
         if pretrained:
-            self.model = models.swin_t(weights=models.Swin_T_Weights.DEFAULT)
+            try:
+                weights = models.Swin_T_Weights.DEFAULT
+                self.model = models.swin_t(weights=weights)
+            except (AttributeError, ImportError):
+                # Fallback for older torch versions
+                try:
+                    self.model = models.swin_t(pretrained=True)
+                except:
+                    print("Swin Transformer not available in this PyTorch version, using without pre-training")
+                    self.model = models.swin_t(pretrained=False)
         else:
             self.model = models.swin_t(weights=None)
             
@@ -151,66 +201,3 @@ class SwinTransformerModel(nn.Module):
         if x.shape[-1] != 224:
             x = F.interpolate(x, size=(224, 224), mode='bilinear', align_corners=False)
         return self.model(x)
-
-
-def get_model(model_name, num_classes=100, pretrained=True):
-    """
-    Factory function to get a specified model
-    
-    Args:
-        model_name: Name of the model to instantiate
-        num_classes: Number of output classes
-        pretrained: Whether to use pretrained weights
-        
-    Returns:
-        An instantiated model
-    """
-    models_dict = {
-        'custom_cnn': lambda: CustomCNN(num_classes=num_classes),
-        'resnet18': lambda: ResNet18Model(num_classes=num_classes, pretrained=pretrained),
-        'resnet50': lambda: ResNet50Model(num_classes=num_classes, pretrained=pretrained),
-        'vgg16': lambda: VGG16Model(num_classes=num_classes, pretrained=pretrained),
-        'densenet121': lambda: DenseNet121Model(num_classes=num_classes, pretrained=pretrained),
-        'efficientnet_b0': lambda: EfficientNetB0Model(num_classes=num_classes, pretrained=pretrained),
-        'convnext': lambda: ConvNextModel(num_classes=num_classes, pretrained=pretrained),
-        'vit': lambda: VisionTransformerModel(num_classes=num_classes, pretrained=pretrained),
-        'swin': lambda: SwinTransformerModel(num_classes=num_classes, pretrained=pretrained),
-    }
-    
-    if model_name not in models_dict:
-        raise ValueError(f"Model '{model_name}' not implemented. Available models: {list(models_dict.keys())}")
-    
-    return models_dict[model_name]()
-
-
-# Example usage
-if __name__ == "__main__":
-    from data_preparation import load_cifar100
-    import time
-    
-    train_loader, test_loader, classes = load_cifar100(batch_size=4)
-    
-    # Test each model with a small batch of data
-    for model_name in ['custom_cnn', 'resnet18', 'vgg16', 'densenet121', 
-                      'efficientnet_b0', 'convnext', 'vit', 'swin']:
-        print(f"\nTesting model: {model_name}")
-        model = get_model(model_name)
-        
-        # Move model to GPU if available
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        model = model.to(device)
-        
-        # Get a batch of data
-        dataiter = iter(train_loader)
-        images, labels = next(dataiter)
-        images, labels = images.to(device), labels.to(device)
-        
-        # Measure inference time
-        start_time = time.time()
-        outputs = model(images)
-        end_time = time.time()
-        
-        print(f"Input shape: {images.shape}")
-        print(f"Output shape: {outputs.shape}")
-        print(f"Inference time: {(end_time - start_time) * 1000:.2f} ms")
-        print(f"Model parameter count: {sum(p.numel() for p in model.parameters()):,}")

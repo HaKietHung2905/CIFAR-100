@@ -1,23 +1,19 @@
-# ResNet Configuration for CIFAR-100
-
 # General settings
 seed: 42
 num_classes: 100
 
-# Model settings
-model_depth: 18  # Options: 18, 34, 50
-pretrained: true  # Use pre-trained weights
-finetune_fc_only: false  # If true, only train the fully connected layer
+# Model name
+model_name: custom_cnn
 
 # Training settings
 num_epochs: 50
 batch_size: 128
 learning_rate: 0.001
-weight_decay: 1e-4
+weight_decay: 0.0001
 patience: 7  # Early stopping patience
 
 # Optimizer settings
-optimizer: adamw  # Options: adam, adamw, sgd
+optimizer: adam  # Options: adam, adamw, sgd
 momentum: 0.9  # Used with SGD
 
 # Learning rate scheduler settings
@@ -27,15 +23,13 @@ gamma: 0.1  # Used with step scheduler
 
 # Data augmentation settings
 augmentation:
+  enabled: true
   random_crop: true
   random_horizontal_flip: true
   color_jitter: true
   cutout: false  # Apply random cutout augmentation
-  mixup: false  # Apply mixup augmentation
-  cutmix: false  # Apply cutmix augmentation
 
 # Additional settings
 save_checkpoints: true
 checkpoint_interval: 5  # Save checkpoints every N epochs
 visualize_results: true
-log_to_tensorboard: false

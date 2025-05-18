@@ -1,5 +1,3 @@
-# CIFAR-100 Image Classification Project - Data Preparation
-
 import torch
 import torchvision
 import torchvision.transforms as transforms
