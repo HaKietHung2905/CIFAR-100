@@ -1,31 +1,35 @@
 # Dataset files
 data/
-data/*
+*/data/
+notebooks/data/
+cifar-100-python/
+cifar-100-python.tar.gz
 *.tar.gz
-*.pkl
-*.npz
-
-# Model checkpoints
-models/
-models/*
+*.bin
 *.pth
-*.pt
-*.h5
-*.ckpt
+*.pkl
 
-# Results and visualizations
-results/
-results/*
-*.png
-*.jpg
-*.jpeg
-*.pdf
+# Large files
+*.h5
+*.zip
+*.npz
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
+
+# Models directory
+models/
+*/models/
+
+# Results
+results/
+*/results/
+*.png
+*.jpg
+*.jpeg
 
 # Environment
 .env
@@ -39,6 +43,5 @@ ENV/
 .vscode/
 *.sublime-workspace
 
-# Logs
-logs/
-*.log
+# Mac specific
+.DS_Store
