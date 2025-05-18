@@ -1,35 +1,35 @@
-# Dataset files
+# Dataset files - be very specific and thorough
 data/
 */data/
 notebooks/data/
 cifar-100-python/
 cifar-100-python.tar.gz
+*/cifar-100-python/
+*/cifar-100-python.tar.gz
 *.tar.gz
 *.bin
-*.pth
-*.pkl
 
-# Large files
-*.h5
-*.zip
-*.npz
-
-# Python cache
-__pycache__/
-*.py[cod]
-*$py.class
-.ipynb_checkpoints/
-
-# Models directory
+# Model files
 models/
 */models/
+*.pth
+*.pt
+*.h5
+*.ckpt
+*.pkl
 
-# Results
+# Results and output
 results/
 */results/
 *.png
 *.jpg
 *.jpeg
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
 
 # Environment
 .env
@@ -38,10 +38,10 @@ env/
 venv/
 ENV/
 
-# IDE specific files
+# IDE
 .idea/
 .vscode/
 *.sublime-workspace
 
-# Mac specific
+# Mac
 .DS_Store
