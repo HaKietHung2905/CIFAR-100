@@ -440,8 +440,6 @@ python scripts/setup_environment.py --check
 ## 📚 Additional Resources
 
 - [CIFAR-100 Dataset](https://www.cs.toronto.edu/~kriz/cifar.html)
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [Torchvision Models](https://pytorch.org/vision/stable/models.html)
 
 ## 🤝 Contributing
 
@@ -454,19 +452,6 @@ python scripts/setup_environment.py --check
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🎓 Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@misc{cifar100_classification,
-  title={CIFAR-100 Image Classification with Modern Deep Learning Architectures},
-  author={Your Name},
-  year={2024},
-  url={https://github.com/yourusername/cifar100-classification}
-}
-```
 
 ---
 
