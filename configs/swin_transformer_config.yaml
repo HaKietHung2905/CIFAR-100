@@ -1,0 +1,67 @@
+# Swin Transformer Configuration for CIFAR-100
+# configs/swin_transformer_config.yaml
+
+# Model configuration
+model_size: "tiny"  # Options: tiny, small, base
+pretrained: false
+
+# Training configuration
+num_epochs: 100
+learning_rate: 0.001
+weight_decay: 0.05
+optimizer: "adamw"  # Options: adamw, adam, sgd
+momentum: 0.9  # For SGD optimizer
+scheduler: "cosine"  # Options: cosine, reduce_on_plateau, step, none
+step_size: 30  # For step scheduler
+gamma: 0.1  # For step scheduler
+
+# Swin Transformer specific parameters
+warmup_epochs: 5
+label_smoothing: 0.1
+grad_clip: 1.0
+
+# Training behavior
+patience: 15
+checkpoint_interval: 10
+batch_size: 64
+
+# Data augmentation
+augmentation:
+  enabled: true
+  random_crop_padding: 4
+  horizontal_flip_prob: 0.5
+  color_jitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.2
+    hue: 0.0
+
+# System configuration
+num_workers: 4
+pin_memory: true
+
+# Model architecture details (for reference)
+architecture:
+  img_size: 32
+  patch_size: 2
+  window_size: 4
+  embed_dim:
+    tiny: 96
+    small: 96
+    base: 128
+  depths:
+    tiny: [2, 2, 6, 2]
+    small: [2, 2, 18, 2]
+    base: [2, 2, 18, 2]
+  num_heads:
+    tiny: [3, 6, 12, 24]
+    small: [3, 6, 12, 24]
+    base: [4, 8, 16, 32]
+  mlp_ratio: 4.0
+  qkv_bias: true
+  drop_rate: 0.0
+  attn_drop_rate: 0.0
+  drop_path_rate:
+    tiny: 0.2
+    small: 0.3
+    base: 0.5

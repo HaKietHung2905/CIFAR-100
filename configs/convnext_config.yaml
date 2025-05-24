@@ -1,0 +1,446 @@
+# Experiment Configuration
+experiment:
+  name: "convnext_cifar100"
+  description: "ConvNeXt training on CIFAR-100 with modern techniques"
+  tags: ["convnext", "cifar100", "image_classification"]
+  save_dir: "results"
+  checkpoint_dir: "models"
+  log_level: "INFO"
+  seed: 42
+
+# Model Configuration
+model:
+  # Model type and variant
+  name: "convnext"
+  variant: "tiny"  # Options: tiny, small, base, large, xlarge
+  
+  # Implementation type
+  custom_cifar: true  # true: Custom CIFAR-adapted | false: Pretrained torchvision
+  pretrained: true    # Use pretrained weights (when available)
+  
+  # Architecture parameters
+  num_classes: 100
+  in_channels: 3
+  input_size: 32  # CIFAR-100 image size
+  
+  # ConvNeXt-specific parameters
+  drop_path_rate: 0.1        # Stochastic depth rate
+  layer_scale_init_value: 1e-6  # Layer scale initialization
+  head_init_scale: 1.0       # Classification head initialization scale
+  
+  # Variant-specific architectures
+  architectures:
+    tiny:
+      depths: [3, 3, 9, 3]
+      dims: [96, 192, 384, 768]
+      drop_path_rate: 0.1
+      typical_params: "28M"
+    
+    small:
+      depths: [3, 3, 27, 3]
+      dims: [96, 192, 384, 768]
+      drop_path_rate: 0.2
+      typical_params: "50M"
+    
+    base:
+      depths: [3, 3, 27, 3]
+      dims: [128, 256, 512, 1024]
+      drop_path_rate: 0.3
+      typical_params: "89M"
+    
+    large:
+      depths: [3, 3, 27, 3]
+      dims: [192, 384, 768, 1536]
+      drop_path_rate: 0.4
+      typical_params: "198M"
+
+# Training Configuration
+training:
+  # Basic training parameters
+  epochs: 300
+  batch_size: 128
+  eval_batch_size: 256
+  
+  # Variant-specific batch sizes (override based on model size)
+  variant_batch_sizes:
+    tiny: 128
+    small: 64
+    base: 32
+    large: 16
+  
+  # Learning rate and optimization
+  learning_rate: 4e-3  # Base learning rate
+  min_lr: 1e-6         # Minimum learning rate for cosine scheduling
+  weight_decay: 0.05   # L2 regularization
+  
+  # Learning rate scheduling
+  lr_scheduler:
+    type: "cosine_with_warmup"  # Options: cosine_with_warmup, step, exponential
+    warmup_epochs: 20
+    warmup_init_lr: 1e-6
+    cosine_restarts: false
+    restart_interval: 100
+  
+  # Optimizer settings
+  optimizer:
+    type: "adamw"  # Options: adamw, sgd, rmsprop
+    betas: [0.9, 0.999]
+    eps: 1e-8
+    momentum: 0.9  # For SGD
+    nesterov: true  # For SGD
+  
+  # Training techniques
+  gradient_clipping:
+    enabled: true
+    max_norm: 1.0
+    norm_type: 2
+  
+  mixed_precision:
+    enabled: true
+    loss_scale: "dynamic"
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 15
+    min_delta: 1e-4
+    monitor: "val_accuracy"
+    mode: "max"
+  
+  # Validation and evaluation
+  validation:
+    split_ratio: 0.2  # 80% train, 20% validation
+    eval_frequency: 1  # Evaluate every N epochs
+    save_best_only: true
+    metric: "val_accuracy"  # Metric for best model selection
+  
+  # Model checkpointing
+  checkpointing:
+    save_frequency: 10  # Save checkpoint every N epochs
+    keep_last_n: 3     # Keep last N checkpoints
+    save_optimizer: true
+    save_scheduler: true
+
+# Data Configuration
+data:
+  # Dataset parameters
+  dataset: "cifar100"
+  data_dir: "./data"
+  download: true
+  
+  # Data loading
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  
+  # Data preprocessing and normalization
+  preprocessing:
+    # CIFAR-100 statistics
+    mean: [0.5071, 0.4867, 0.4408]
+    std: [0.2675, 0.2565, 0.2761]
+    normalize: true
+  
+  # Data augmentation for training
+  augmentation:
+    # Basic augmentations
+    random_crop:
+      enabled: true
+      size: 32
+      padding: 4
+      padding_mode: "reflect"
+    
+    random_horizontal_flip:
+      enabled: true
+      probability: 0.5
+    
+    color_jitter:
+      enabled: true
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+      probability: 0.5
+    
+    random_rotation:
+      enabled: false
+      degrees: 15
+      probability: 0.3
+    
+    # Advanced augmentations
+    mixup:
+      enabled: true
+      alpha: 0.8
+      probability: 0.5
+      start_epoch: 10  # Start mixup after N epochs
+    
+    cutmix:
+      enabled: true
+      alpha: 1.0
+      probability: 0.5
+      start_epoch: 10
+    
+    # Random erase
+    random_erase:
+      enabled: false
+      probability: 0.25
+      scale: [0.02, 0.33]
+      ratio: [0.3, 3.3]
+    
+    # Auto augmentation
+    auto_augment:
+      enabled: false
+      policy: "cifar10"  # Options: cifar10, imagenet
+    
+    # Test time augmentation
+    tta:
+      enabled: false
+      num_augmentations: 5
+
+# Regularization Configuration
+regularization:
+  # Label smoothing
+  label_smoothing: 0.1
+  
+  # Dropout and stochastic depth
+  dropout_rate: 0.0  # Traditional dropout (usually 0 for ConvNeXt)
+  stochastic_depth:
+    enabled: true
+    survival_prob: 0.9  # 1 - drop_path_rate
+  
+  # Batch normalization replacement (ConvNeXt uses LayerNorm)
+  layer_norm:
+    eps: 1e-6
+    elementwise_affine: true
+
+# Loss Configuration
+loss:
+  # Primary loss function
+  type: "cross_entropy"  # Options: cross_entropy, focal_loss, label_smoothing_ce
+  
+  # Loss function parameters
+  cross_entropy:
+    weight: null  # Class weights (null for balanced)
+    ignore_index: -100
+    reduction: "mean"
+  
+  focal_loss:
+    alpha: 1.0
+    gamma: 2.0
+    reduction: "mean"
+  
+  # Auxiliary losses
+  auxiliary_losses:
+    enabled: false
+    feature_distillation:
+      enabled: false
+      temperature: 4.0
+      alpha: 0.7
+
+# Evaluation Metrics
+metrics:
+  # Primary metrics
+  primary: ["accuracy", "top5_accuracy"]
+  
+  # Additional metrics
+  additional: ["precision", "recall", "f1_score"]
+  
+  # Per-class analysis
+  per_class_analysis: true
+  confusion_matrix: true
+  
+  # Metric computation
+  average_types: ["macro", "weighted"]
+  
+  # Top-k accuracy
+  top_k_values: [1, 5]
+
+# Hardware and Performance
+hardware:
+  # Device configuration
+  device: "auto"  # Options: auto, cuda, cpu, mps
+  gpu_ids: [0]    # List of GPU IDs to use
+  
+  # Memory optimization
+  memory_efficient: true
+  gradient_checkpointing: false  # Trade compute for memory
+  
+  # Compilation (PyTorch 2.0+)
+  compile_model:
+    enabled: false
+    mode: "default"  # Options: default, reduce-overhead, max-autotune
+    backend: "inductor"
+  
+  # Distributed training
+  distributed:
+    enabled: false
+    backend: "nccl"  # Options: nccl, gloo, mpi
+    world_size: 1
+    rank: 0
+
+# Logging and Monitoring
+logging:
+  # Console logging
+  console_log_level: "INFO"
+  
+  # File logging
+  log_file: "training.log"
+  file_log_level: "DEBUG"
+  
+  # Progress tracking
+  progress_bar: true
+  log_frequency: 100  # Log every N batches
+  
+  # Experiment tracking (optional integrations)
+  wandb:
+    enabled: false
+    project: "convnext-cifar100"
+    entity: null
+    tags: ["convnext", "cifar100"]
+  
+  tensorboard:
+    enabled: true
+    log_dir: "runs"
+    log_images: true
+    log_frequency: 500
+  
+  # Model analysis
+  profiling:
+    enabled: false
+    profile_memory: true
+    profile_shapes: true
+
+# Visualization and Analysis
+visualization:
+  # Training plots
+  plot_training_curves: true
+  plot_learning_rate: true
+  plot_loss_landscape: false
+  
+  # Model analysis
+  visualize_filters: false
+  feature_maps: false
+  attention_maps: false
+  
+  # Data visualization
+  plot_data_samples: true
+  plot_augmentations: true
+  
+  # Results visualization
+  confusion_matrix: true
+  per_class_accuracy: true
+  misclassified_samples: true
+  
+  # Save options
+  save_plots: true
+  plot_format: "png"  # Options: png, svg, pdf
+  dpi: 300
+
+# Reproducibility
+reproducibility:
+  # Random seeds
+  python_seed: 42
+  numpy_seed: 42
+  torch_seed: 42
+  
+  # Deterministic operations
+  deterministic: false  # Set to true for full reproducibility (slower)
+  benchmark: true       # CuDNN benchmark for performance
+  
+  # CUDA settings
+  cuda_deterministic: false
+
+# Model Variants Quick Configs
+# Use these for quick experimentation
+quick_configs:
+  # Fast prototyping
+  debug:
+    training:
+      epochs: 5
+      batch_size: 32
+    data:
+      num_workers: 2
+    logging:
+      log_frequency: 10
+  
+  # Lightweight training
+  lightweight:
+    model:
+      variant: "tiny"
+      custom_cifar: true
+    training:
+      epochs: 100
+      batch_size: 128
+    data:
+      augmentation:
+        mixup:
+          enabled: false
+        cutmix:
+          enabled: false
+  
+  # Full performance training
+  performance:
+    model:
+      variant: "base"
+      custom_cifar: true
+    training:
+      epochs: 300
+      batch_size: 32
+    data:
+      augmentation:
+        mixup:
+          enabled: true
+        cutmix:
+          enabled: true
+    hardware:
+      memory_efficient: true
+
+# Hyperparameter Search Spaces (for automated tuning)
+hyperparameter_search:
+  enabled: false
+  
+  # Parameters to search
+  search_space:
+    learning_rate:
+      type: "log_uniform"
+      low: 1e-4
+      high: 1e-2
+    
+    weight_decay:
+      type: "log_uniform"
+      low: 1e-3
+      high: 1e-1
+    
+    drop_path_rate:
+      type: "uniform"
+      low: 0.0
+      high: 0.3
+    
+    batch_size:
+      type: "choice"
+      choices: [32, 64, 128]
+  
+  # Search configuration
+  search_method: "random"  # Options: random, grid, bayesian
+  num_trials: 20
+  timeout: 3600  # seconds
+
+# CIFAR-100 Specific Settings
+cifar100:
+  # Class information
+  num_classes: 100
+  num_superclasses: 20
+  classes_per_superclass: 5
+  
+  # Dataset splits
+  train_samples: 50000
+  test_samples: 10000
+  samples_per_class: 500
+  
+  # Superclass analysis
+  analyze_superclasses: true
+  superclass_confusion: true
+  
+  # Class imbalance handling
+  class_weights: null  # Auto-computed if null
+  oversample_minority: false
+  undersample_majority: false
